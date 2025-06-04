@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
-const REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI || 'http://localhost:3000/api/auth/spotify/callback';
+const REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI || 'https://localhost:3000/api/auth/spotify/callback';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
