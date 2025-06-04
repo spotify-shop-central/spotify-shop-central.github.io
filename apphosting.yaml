@@ -1,69 +1,38 @@
-# Firebase App Hosting configuration
-# https://firebase.google.com/docs/app-hosting
+# apphosting.yaml  (checked in to repo)
 
-# Settings for Cloud Run runtime
 runConfig:
   runtime: nodejs20
-  # You can tweak CPU/memory if needed
   cpu: 2
   memoryMiB: 4096
 
-# Environment variables and secrets
 env:
-  # Static variable
+  # Static
   - variable: NODE_ENV
     value: production
-    availability:
-      - BUILD
-      - RUNTIME
+    availability: [BUILD, RUNTIME]
 
-  # Secrets from Google Secret Manager
+  # Secret Manager references  ↓↓↓
   - variable: SPOTIFY_CLIENT_ID
-    secret: SPOTIFY_CLIENT_ID
-    availability:
-      - BUILD
-      - RUNTIME
+    secret:  SPOTIFY_CLIENT_ID
+    availability: [BUILD, RUNTIME]
 
   - variable: SPOTIFY_CLIENT_SECRET
-    secret: SPOTIFY_CLIENT_SECRET
-    availability:
-      - BUILD
-      - RUNTIME
+    secret:  SPOTIFY_CLIENT_SECRET
+    availability: [RUNTIME]   # <-- only server needs it
 
   - variable: OPENROUTER_KEY
-    secret: OPENROUTER_KEY
-    availability:
-      - BUILD
-      - RUNTIME
+    secret:  OPENROUTER_KEY
+    availability: [BUILD, RUNTIME]
 
   - variable: SPOTIFY_REDIRECT_URI
-    secret: SPOTIFY_REDIRECT_URI
-    availability:
-      - BUILD
-      - RUNTIME
+    secret:  SPOTIFY_REDIRECT_URI
+    availability: [RUNTIME]
 
-# Build configuration
 buildConfig:
   commands:
-    - name: Install dependencies
+    - name: Install deps
       command: yarn install
-    - name: Build Next.js app
+    - name: Build Next.js
       command: yarn build
 
-# Timeout for build in seconds
 timeout: 1200
-
-# Optional headers
-headers:
-  - source: "**"
-    headers:
-      - key: X-Frame-Options
-        value: DENY
-      - key: X-Content-Type-Options
-        value: nosniff
-
-# Redirects
-redirects:
-  - source: /home
-    destination: /
-    type: 302 
