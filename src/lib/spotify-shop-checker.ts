@@ -38,12 +38,12 @@ interface SpotifyArtist {
 ///////////////////////////
 
 async function getAccessToken(): Promise<string> {
-  const clientId     = process.env.SPOTIPY_CLIENT_ID;
-  const clientSecret = process.env.SPOTIPY_CLIENT_SECRET;
+  const clientId     = process.env.SPOTIFY_CLIENT_ID;
+  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
     throw new Error(
-      'Missing Spotify credentials: set SPOTIPY_CLIENT_ID and SPOTIPY_CLIENT_SECRET'
+      'Missing Spotify credentials: set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET'
     );
   }
 
