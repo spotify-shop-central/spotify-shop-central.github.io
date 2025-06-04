@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -21,7 +21,7 @@ interface State {
 
 // Global variable to store the artist shop URLs
 
-export default function Home() {
+function HomeContent() {
   const [state, setState] = useState<State>({ 
     artists: [], 
     loading: false,
@@ -252,5 +252,13 @@ export default function Home() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="text-center py-8">Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   )
 }
