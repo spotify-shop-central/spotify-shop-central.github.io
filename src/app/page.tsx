@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Badge } from "../components/ui/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../components/ui/accordion"
 import { ExternalLink, Music, ShoppingBag, Coffee, LogIn } from "lucide-react"
-import { getArtistShopUrls, ArtistCard } from "@/lib/spotify-shop-checker"
+import { getArtistShopUrls, ArtistCard } from "../lib/spotify-shop-checker"
 import Image from "next/image"
 import shopCentralLogo from "../../public/shop-central-logo.png"
 
