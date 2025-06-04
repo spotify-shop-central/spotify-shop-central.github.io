@@ -1,0 +1,59 @@
+# Firebase App Hosting configuration
+# https://firebase.google.com/docs/app-hosting
+
+# Runtime configuration
+runConfig:
+  # Node.js runtime version
+  runtime: nodejs20
+  
+  # Environment variables
+  env:
+    NODE_ENV: production
+    SPOTIFY_CLIENT_ID: ${{ env.SPOTIFY_CLIENT_ID }}
+    SPOTIFY_CLIENT_SECRET: ${{ env.SPOTIFY_CLIENT_SECRET }}
+    OPENROUTER_KEY: ${{ env.OPENROUTER_KEY }}
+    SPOTIFY_REDIRECT_URI: ${{ env.SPOTIFY_REDIRECT_URI }}
+
+# Build configuration
+buildConfig:
+  # Build commands
+  commands:
+    # Install dependencies
+    - name: "Install dependencies"
+      command: "yarn install"
+      
+    # Build the Next.js application
+    - name: "Build Next.js app"
+      command: "yarn build"
+      
+  # Optional: Custom build environment variables
+  env:
+    NODE_ENV: production
+    SPOTIFY_CLIENT_ID: ${{ env.SPOTIFY_CLIENT_ID }}
+    SPOTIFY_CLIENT_SECRET: ${{ env.SPOTIFY_CLIENT_SECRET }}
+    OPENROUTER_KEY: ${{ env.OPENROUTER_KEY }}
+    SPOTIFY_REDIRECT_URI: ${{ env.SPOTIFY_REDIRECT_URI }}
+
+# Optional: Resource allocation
+resources:
+  # CPU and memory allocation for the build
+  cpu: 2
+  memory: 4Gi
+  
+# Optional: Build timeout (in seconds)
+timeout: 1200
+
+# Optional: Custom headers and redirects
+headers:
+  - source: "**"
+    headers:
+      - key: "X-Frame-Options"
+        value: "DENY"
+      - key: "X-Content-Type-Options"
+        value: "nosniff"
+
+# Optional: Redirect configuration
+redirects:
+  - source: "/home"
+    destination: "/"
+    type: 302 
