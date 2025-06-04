@@ -10,7 +10,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "..
 import { ExternalLink, Music, ShoppingBag, Coffee, LogIn } from "lucide-react"
 import { getArtistShopUrls, ArtistCard } from "../../lib/spotify-shop-checker"
 import Image from "next/image"
-import shopCentralLogo from "@/public/shop-central-logo.png"
+import shopCentralLogo from "../../../public/shop-central-logo.png"
 
 interface State {
   artists: ArtistCard[]
