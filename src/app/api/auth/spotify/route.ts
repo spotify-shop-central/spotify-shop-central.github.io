@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
-const REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI || 'http://localhost:3000/api/auth/spotify/callback';
+const REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI || 'http://localhost:8080/api/auth/spotify/callback';
 const SCOPES = 'user-read-private user-read-email';
 
 function generateRandomString(length: number) {
