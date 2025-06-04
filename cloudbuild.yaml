@@ -25,14 +25,6 @@ steps:
   # - name: 'gcr.io/cloud-builders/gsutil'
   #   args: ['cp', '-r', './out/*', 'gs://your-bucket-name/']
 
-# Configure secrets from Google Secret Manager
-availableSecrets:
-  secretManager:
-      env: 'SPOTIFY_CLIENT_ID'
-      env: 'SPOTIFY_CLIENT_SECRET'
-      env: 'OPENROUTER_KEY'
-      env: 'SPOTIFY_REDIRECT_URI'
-
 # Build configuration
 options:
   machineType: 'E2_HIGHCPU_8'
