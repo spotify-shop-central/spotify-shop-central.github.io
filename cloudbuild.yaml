@@ -28,13 +28,13 @@ steps:
 # Configure secrets from Google Secret Manager
 availableSecrets:
   secretManager:
-    - versionName: 'projects/spotify-shop-central/secrets/spotify-client-id/versions/latest'
+    - versionName: 'projects/spotify-shop-central/secrets/SPOTIFY_CLIENT_ID/versions/latest'
       env: 'SPOTIFY_CLIENT_ID'
-    - versionName: 'projects/spotify-shop-central/secrets/spotify-client-secret/versions/latest'
+    - versionName: 'projects/spotify-shop-central/secrets/SPOTIFY_CLIENT_SECRET/versions/latest'
       env: 'SPOTIFY_CLIENT_SECRET'
-    - versionName: 'projects/spotify-shop-central/secrets/openrouter-key/versions/latest'
+    - versionName: 'projects/spotify-shop-central/secrets/OPENROUTER_KEY/versions/latest'
       env: 'OPENROUTER_KEY'
-    - versionName: 'projects/spotify-shop-central/secrets/spotify-redirect-uri/versions/latest'
+    - versionName: 'projects/spotify-shop-central/secrets/SPOTIFY_REDIRECT_URI/versions/latest'
       env: 'SPOTIFY_REDIRECT_URI'
 
 # Build configuration
