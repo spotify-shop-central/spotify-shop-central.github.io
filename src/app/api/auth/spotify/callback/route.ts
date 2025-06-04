@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
   if (!state) {
     const url = request.nextUrl.clone()
-    url.pathname = '/'
+    url.pathname = '/home'
     return NextResponse.rewrite(url);
   }
 
