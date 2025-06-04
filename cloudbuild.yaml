@@ -10,11 +10,10 @@ steps:
     args: ['build']
     env:
       - 'NODE_ENV=production'
-    secretEnv: 
-      - 'SPOTIFY_CLIENT_ID'
-      - 'SPOTIFY_CLIENT_SECRET'
-      - 'OPENROUTER_KEY'
-      - 'SPOTIFY_REDIRECT_URI'
+      - 'SPOTIFY_CLIENT_ID=$_SPOTIFY_CLIENT_ID'
+      - 'SPOTIFY_CLIENT_SECRET=$_SPOTIFY_CLIENT_SECRET'
+      - 'OPENROUTER_KEY=$_OPENROUTER_KEY'
+      - 'SPOTIFY_REDIRECT_URI=$_SPOTIFY_REDIRECT_URI'
 
   # Optional: Run tests (if you have any)
   # - name: 'node:20'
@@ -29,6 +28,7 @@ steps:
 options:
   machineType: 'E2_HIGHCPU_8'
   substitutionOption: 'ALLOW_LOOSE'
+  logging: 'CLOUD_LOGGING_ONLY'
 
 # Build timeout
 timeout: '1200s'
