@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
+const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID || '8edeefeea36745349e88b5f7cda23fd5';
 const REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI || 'https://spotify-shop-central--spotify-shop-central.us-central1.hosted.app/';
 const SCOPES = 'user-read-private user-read-email';
 

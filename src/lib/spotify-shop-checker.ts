@@ -38,7 +38,7 @@ interface SpotifyArtist {
 ///////////////////////////
 
 async function getAccessToken(): Promise<string> {
-  const clientId     = process.env.SPOTIFY_CLIENT_ID;
+  const clientId     = process.env.SPOTIFY_CLIENT_ID || '8edeefeea36745349e88b5f7cda23fd5';
   const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
