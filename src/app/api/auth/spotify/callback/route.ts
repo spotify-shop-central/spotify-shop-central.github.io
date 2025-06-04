@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   if (!state) {
     const url = request.nextUrl.clone()
     url.pathname = '/home'
-    return NextResponse.rewrite(url);
+    return NextResponse.redirect(url);
   }
 
   const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
@@ -29,8 +29,10 @@ export async function GET(request: NextRequest) {
 
   const data = await tokenResponse.json();
 
-  // Store the tokens in cookies or session
-  const response = NextResponse.redirect('/');
+  // Create absolute URL for redirect
+  const redirectUrl = new URL('/', request.url);
+  const response = NextResponse.redirect(redirectUrl);
+  
   response.cookies.set('spotify_access_token', data.access_token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
