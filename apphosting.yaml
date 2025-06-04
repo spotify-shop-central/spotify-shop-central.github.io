@@ -1,59 +1,69 @@
 # Firebase App Hosting configuration
 # https://firebase.google.com/docs/app-hosting
 
-# Runtime configuration
+# Settings for Cloud Run runtime
 runConfig:
-  # Node.js runtime version
   runtime: nodejs20
-  
-  # Environment variables from Google Secret Manager
-  env:
-    NODE_ENV: production
-    SPOTIFY_CLIENT_ID: ${{ secrets.projects/spotify-shop-central/secrets/SPOTIFY_CLIENT_ID/versions/latest }}
-    SPOTIFY_CLIENT_SECRET: ${{ secrets.projects/spotify-shop-central/secrets/SPOTIFY_CLIENT_SECRET/versions/latest }}
-    OPENROUTER_KEY: ${{ secrets.projects/spotify-shop-central/secrets/OPENROUTER_KEY/versions/latest }}
-    SPOTIFY_REDIRECT_URI: ${{ secrets.projects/spotify-shop-central/secrets/SPOTIFY_REDIRECT_URI/versions/latest }}
+  # You can tweak CPU/memory if needed
+  cpu: 2
+  memoryMiB: 4096
+
+# Environment variables and secrets
+env:
+  # Static variable
+  - variable: NODE_ENV
+    value: production
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # Secrets from Google Secret Manager
+  - variable: SPOTIFY_CLIENT_ID
+    secret: SPOTIFY_CLIENT_ID
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: SPOTIFY_CLIENT_SECRET
+    secret: SPOTIFY_CLIENT_SECRET
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: OPENROUTER_KEY
+    secret: OPENROUTER_KEY
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: SPOTIFY_REDIRECT_URI
+    secret: SPOTIFY_REDIRECT_URI
+    availability:
+      - BUILD
+      - RUNTIME
 
 # Build configuration
 buildConfig:
-  # Build commands
   commands:
-    # Install dependencies
-    - name: "Install dependencies"
-      command: "yarn install"
-      
-    # Build the Next.js application
-    - name: "Build Next.js app"
-      command: "yarn build"
-      
-  # Build environment variables from Google Secret Manager
-  env:
-    NODE_ENV: production
-    SPOTIFY_CLIENT_ID: ${{ secrets.projects/spotify-shop-central/secrets/SPOTIFY_CLIENT_ID/versions/latest }}
-    SPOTIFY_CLIENT_SECRET: ${{ secrets.projects/spotify-shop-central/secrets/SPOTIFY_CLIENT_SECRET/versions/latest }}
-    OPENROUTER_KEY: ${{ secrets.projects/spotify-shop-central/secrets/OPENROUTER_KEY/versions/latest }}
-    SPOTIFY_REDIRECT_URI: ${{ secrets.projects/spotify-shop-central/secrets/SPOTIFY_REDIRECT_URI/versions/latest }}
+    - name: Install dependencies
+      command: yarn install
+    - name: Build Next.js app
+      command: yarn build
 
-# Optional: Resource allocation
-resources:
-  # CPU and memory allocation for the build
-  cpu: 2
-  memory: 4Gi
-  
-# Optional: Build timeout (in seconds)
+# Timeout for build in seconds
 timeout: 1200
 
-# Optional: Custom headers and redirects
+# Optional headers
 headers:
   - source: "**"
     headers:
-      - key: "X-Frame-Options"
-        value: "DENY"
-      - key: "X-Content-Type-Options"
-        value: "nosniff"
+      - key: X-Frame-Options
+        value: DENY
+      - key: X-Content-Type-Options
+        value: nosniff
 
-# Optional: Redirect configuration
+# Redirects
 redirects:
-  - source: "/home"
-    destination: "/"
+  - source: /home
+    destination: /
     type: 302 

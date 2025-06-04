@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID || '8edeefeea36745349e88b5f7cda23fd5';
 const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
-const REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI || 'https://spotify-shop-central--spotify-shop-central.us-central1.hosted.app/';
+const REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI || 'https://spotify-shop-central--spotify-shop-central.us-central1.hosted.app/api/auth/spotify/callback';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
