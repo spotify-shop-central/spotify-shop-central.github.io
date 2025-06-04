@@ -26,7 +26,7 @@ env:
 
   - variable: SPOTIFY_REDIRECT_URI
     secret:  SPOTIFY_REDIRECT_URI
-    availability: [RUNTIME]
+    availability: [BUILD,RUNTIME]
 
 buildConfig:
   commands:
