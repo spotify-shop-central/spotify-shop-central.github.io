@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.20.2",
+    "@clerk/nextjs": "^6.21.0",
     "@firebasegen/default-connector": "link:dataconnect-generated/js/default-connector",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-navigation-menu": "^1.2.13",
