@@ -1,6 +1,6 @@
 'use client';
 import { notFound } from 'next/navigation';
-import { getArtistBio, getAllArtistSlugs } from '../../../lib/artist-data';
+import { getArtistBio } from '../../../lib/artist-data';
 import { ArtistPage } from '../../../components/artist-page';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';

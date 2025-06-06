@@ -5,11 +5,6 @@ import { Navbar } from "../components/navbar";
 import { Footer } from "../components/footer";
 import {
   ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
 } from '@clerk/nextjs'
 
 const geistSans = Geist({

@@ -1,16 +1,15 @@
 'use client';
 
-import { useEffect, useState, Suspense } from "react"
+import { Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Input } from "../../components/ui/input"
 import { Button } from "../../components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../../components/ui/accordion"
-import { ExternalLink, Coffee, Search as SearchIcon } from "lucide-react"
+import { Search as SearchIcon } from "lucide-react"
 import { getArtistShopUrls, getArtistShopUrlsFromLLM } from "../../lib/spotify-shop-checker"
 import { SearchResults } from "../../components/search-results"
 import Image from "next/image"
 import shopCentralLogo from "../../../public/shop-central-logo.png"
-import { UserButton } from "@clerk/nextjs"
 
 function HomeContent() {
   const router = useRouter();
