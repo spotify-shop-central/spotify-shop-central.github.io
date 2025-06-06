@@ -2,13 +2,25 @@
 
 import { useAuth } from '@clerk/nextjs';
 
+export interface AuthenticatedFetchOptions extends RequestInit {
+  timeout?: number;
+}
+
 /**
  * Custom hook for authenticated fetch requests
  */
 export function useAuthenticatedFetch() {
-  const { getToken } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
 
-  const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+  const authenticatedFetch = async (url: string, options: AuthenticatedFetchOptions = {}) => {
+    if (!isLoaded) {
+      throw new Error('Authentication not loaded yet');
+    }
+
+    if (!isSignedIn) {
+      throw new Error('User not signed in');
+    }
+
     try {
       // Get the current session token
       const token = await getToken();
@@ -17,34 +29,96 @@ export function useAuthenticatedFetch() {
         throw new Error('No authentication token available');
       }
 
+      const { timeout = 10000, ...fetchOptions } = options;
+
       // Merge headers with Authorization
       const headers = {
         'Content-Type': 'application/json',
-        ...options.headers,
+        ...fetchOptions.headers,
         Authorization: `Bearer ${token}`,
       };
 
+      // Create abort controller for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+
       const response = await fetch(url, {
-        ...options,
+        ...fetchOptions,
         headers,
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
+        // Handle specific error cases
+        if (response.status === 401) {
+          throw new Error('Authentication failed - please sign in again');
+        }
+        if (response.status === 403) {
+          throw new Error('Access denied - insufficient permissions');
+        }
+        if (response.status === 404) {
+          throw new Error('Resource not found');
+        }
+        if (response.status >= 500) {
+          throw new Error('Server error - please try again later');
+        }
+        
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return response.json();
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        return response.json();
+      }
+      
+      return response.text();
     } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Request timeout');
+      }
+      
       console.error('Authenticated fetch error:', error);
       throw error;
     }
   };
 
-  return authenticatedFetch;
+  return {
+    authenticatedFetch,
+    isAuthenticated: isSignedIn,
+    isLoading: !isLoaded,
+  };
 }
 
 /**
- * Server-side utility to verify Clerk tokens
+ * Utility function for making authenticated API calls to your search endpoint
+ */
+export function useSearchAPI() {
+  const { authenticatedFetch, isAuthenticated, isLoading } = useAuthenticatedFetch();
+
+  const search = async (query: string, searchType: 'llm' | 'genre' = 'llm') => {
+    return authenticatedFetch('/api/search', {
+      method: 'POST',
+      body: JSON.stringify({ query, searchType }),
+    });
+  };
+
+  const searchGet = async (query: string, searchType: 'llm' | 'genre' = 'llm') => {
+    const params = new URLSearchParams({ query, type: searchType });
+    return authenticatedFetch(`/api/search?${params}`);
+  };
+
+  return {
+    search,
+    searchGet,
+    isAuthenticated,
+    isLoading,
+  };
+}
+
+/**
+ * Server-side utility to verify Clerk tokens (kept for compatibility)
  */
 export async function verifyClerkToken(token: string) {
   try {

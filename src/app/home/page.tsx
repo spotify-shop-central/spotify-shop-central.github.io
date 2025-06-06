@@ -6,30 +6,19 @@ import { Input } from "../../components/ui/input"
 import { Button } from "../../components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../../components/ui/accordion"
 import { Search as SearchIcon } from "lucide-react"
-import { getArtistShopUrls, getArtistShopUrlsFromLLM } from "../../lib/spotify-shop-checker"
 import { SearchResults } from "../../components/search-results"
 import Image from "next/image"
 import shopCentralLogo from "../../../public/shop-central-logo.png"
-import { useAuthenticatedFetch } from "../../lib/auth-fetch"
+import { useSearchAPI } from "../../lib/auth-fetch"
 import { useUser } from "@clerk/nextjs"
 
 function HomeContent() {
   const router = useRouter();
   const { user } = useUser();
-  const authenticatedFetch = useAuthenticatedFetch();
+  const { search, isAuthenticated, isLoading } = useSearchAPI();
   const searchParams = useSearchParams();
   const query = searchParams.get('query') || '';
   const queryType = searchParams.get('type') || '';   // default empty means LLM
-
-  // Example of using authenticated fetch
-  const callProtectedAPI = async () => {
-    try {
-      const data = await authenticatedFetch('/api/protected');
-      console.log('Protected data:', data);
-    } catch (error) {
-      console.error('Failed to call protected API:', error);
-    }
-  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -42,10 +31,59 @@ function HomeContent() {
     }
   };
 
-  // Determine which search function to use - LLM by default
-  const searchFunction = (queryType === 'regular' || queryType === 'genre')
-    ? getArtistShopUrls
-    : getArtistShopUrlsFromLLM;
+  // Custom search function that uses the API
+  const apiSearchFunction = async (searchQuery: string): Promise<any[]> => {
+    try {
+      const searchType = (queryType === 'regular' || queryType === 'genre') ? 'genre' : 'llm';
+      const result = await search(searchQuery, searchType);
+      
+      if (result.success) {
+        return result.results;
+      } else {
+        throw new Error(result.error || 'Search failed');
+      }
+    } catch (error) {
+      console.error('API search error:', error);
+      throw error;
+    }
+  };
+
+  // Show loading state while authentication is loading
+  if (isLoading) {
+    return (
+      <div className="container mx-auto max-w-7xl p-6 space-y-6">
+        <div className="text-center space-y-4">
+          <div className="flex justify-center items-center gap-2">
+            <Image src={shopCentralLogo} alt="Spotify Logo" width={100} height={100} className="mr-2"/>
+            <h1 className="text-5xl font-bold tracking-tight">Loading...</h1>
+          </div>
+          <p className="text-muted-foreground text-lg">
+            Checking authentication status...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show authentication error if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="container mx-auto max-w-7xl p-6 space-y-6">
+        <div className="text-center space-y-4">
+          <div className="flex justify-center items-center gap-2">
+            <Image src={shopCentralLogo} alt="Spotify Logo" width={100} height={100} className="mr-2"/>
+            <h1 className="text-5xl font-bold tracking-tight">Authentication Required</h1>
+          </div>
+          <p className="text-muted-foreground text-lg">
+            Please sign in to access the search dashboard
+          </p>
+          <Button onClick={() => router.push('/')}>
+            Go to Home Page
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   // Show search interface when no query is present
   if (!query) {
@@ -57,7 +95,7 @@ function HomeContent() {
             <h1 className="text-5xl font-bold tracking-tight">Search Dashboard</h1>
           </div>
           <p className="text-muted-foreground text-lg">
-            Your personalized music merchandise discovery platform
+            Welcome back, {user?.firstName || user?.emailAddresses[0]?.emailAddress}! Your personalized music merchandise discovery platform
           </p>
         </div>
 
@@ -157,7 +195,7 @@ function HomeContent() {
       </Button>
       <SearchResults 
         query={query} 
-        searchFunction={searchFunction}
+        searchFunction={apiSearchFunction}
       />
     </div>
   );
