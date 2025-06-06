@@ -22,7 +22,7 @@ env:
 
   - variable: OPENROUTER_KEY
     secret:  OPENROUTER_KEY
-    availability: [BUILD, RUNTIME]
+    availability: [RUNTIME]
 
   - variable: SPOTIFY_REDIRECT_URI
     secret:  SPOTIFY_REDIRECT_URI
@@ -34,7 +34,7 @@ env:
 
   - variable: CLERK_SECRET_KEY
     secret: CLERK_SECRET_KEY
-    availability: [BUILD, RUNTIME]
+    availability: [RUNTIME]
 
 buildConfig:
   commands:
