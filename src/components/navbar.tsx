@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "../lib/utils";
 import {
   NavigationMenu,
@@ -12,112 +13,104 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "../components/ui/navigation-menu";
+import { Button } from "../components/ui/button";
 import { UserButton } from "@clerk/nextjs";
 import { SignedIn } from "@clerk/nextjs";
 import { SignUpButton } from "@clerk/nextjs";
 import { SignInButton } from "@clerk/nextjs";
 import { SignedOut } from "@clerk/nextjs";
+import { LogIn } from "lucide-react";
+import shopCentralLogo from "../../public/shop-central-logo.png";
 
-// Featured artists data
+// Featured artists data (LLM-powered)
 const featuredArtists = [
   {
-    title: "Taylor Swift",
-    href: "/?query=pop",
-    description: "Pop superstar with extensive merchandise collection.",
+    title: "Billboard Top 100",
+    href: "/home?query=billboard-top-100&type=featured",
+    description: "Current chart-topping artists and their latest merch.",
   },
   {
-    title: "The Weeknd", 
-    href: "/?query=r%26b",
-    description: "R&B and pop artist with exclusive merch drops.",
+    title: "Vinyl Collections",
+    href: "/home?query=vinyl-collections&type=featured",
+    description: "Artists with special vinyl releases and collector items.",
   },
   {
-    title: "Billie Eilish",
-    href: "/?query=alternative",
-    description: "Alternative pop with unique streetwear collaborations.",
+    title: "Up-and-coming Artists",
+    href: "/home?query=up-and-coming-artists&type=featured",
+    description: "Emerging talents with fresh merchandise drops.",
   },
   {
-    title: "Drake",
-    href: "/?query=hip-hop",
-    description: "Hip-hop icon with premium lifestyle merchandise.",
+    title: "All-Time Favorites",
+    href: "/home?query=all-time-favorites&type=featured",
+    description: "Legendary artists with timeless merchandise collections.",
   },
 ];
 
 // Popular genres data
 const popularGenres = [
   {
+    title: "Taylor Swift",
+    href: "/artist/taylor-swift",
+    description: "Pop superstar with extensive merchandise collection.",
+  },
+  {
+    title: "The Weeknd", 
+    href: "/artist/the-weeknd",
+    description: "R&B and pop artist with exclusive merch drops.",
+  },
+  {
+    title: "Billie Eilish",
+    href: "/artist/billie-eilish",
+    description: "Alternative pop with unique streetwear collaborations.",
+  },
+  {
+    title: "Drake",
+    href: "/artist/drake",
+    description: "Hip-hop icon with premium lifestyle merchandise.",
+  },
+];
+// All genres data
+const allGenres = [
+  {
     title: "Hip-Hop",
-    href: "/?query=hip-hop",
+    href: "/genre?query=hip-hop",
     description: "Urban beats and rap culture merchandise.",
   },
   {
     title: "Pop",
-    href: "/?query=pop",
+    href: "/genre?query=pop",
     description: "Mainstream pop artists and trending merch.",
   },
   {
     title: "Rock",
-    href: "/?query=rock",
+    href: "/genre?query=rock",
     description: "Classic and modern rock band merchandise.",
   },
   {
     title: "Electronic",
-    href: "/?query=electronic",
+    href: "/genre?query=electronic",
     description: "EDM and electronic music artist gear.",
   },
   {
     title: "R&B",
-    href: "/?query=r%26b",
+    href: "/genre?query=r-and-b",
     description: "Smooth R&B and soul artist collections.",
   },
   {
     title: "Country",
-    href: "/?query=country",
+    href: "/genre?query=country",
     description: "Country music stars and Americana merch.",
   },
-];
-
-// All genres data
-const allGenres = [
   {
     title: "Jazz",
-    href: "/?query=jazz",
+    href: "/genre?query=jazz",
     description: "Classic and contemporary jazz artists.",
   },
   {
-    title: "Blues",
-    href: "/?query=blues",
-    description: "Blues legends and modern blues artists.",
-  },
-  {
     title: "Classical",
-    href: "/?query=classical",
+    href: "/genre?query=classical",
     description: "Orchestral and classical music merchandise.",
-  },
-  {
-    title: "Folk",
-    href: "/?query=folk",
-    description: "Folk and acoustic artist collections.",
-  },
-  {
-    title: "Reggae",
-    href: "/?query=reggae",
-    description: "Reggae and Caribbean music merch.",
-  },
-  {
-    title: "Metal",
-    href: "/?query=metal",
-    description: "Heavy metal and metalcore band gear.",
-  },
-  {
-    title: "Punk",
-    href: "/?query=punk",
-    description: "Punk rock and alternative merchandise.",
-  },
-  {
-    title: "Indie",
-    href: "/?query=indie",
-    description: "Independent and alternative artist merch.",
-  },
+  }
 ];
 
 // Reusable list item component
@@ -138,10 +131,10 @@ const ListItem = React.forwardRef<
           {...props}
         >
           <div className="text-sm font-medium leading-none">
-            {title}
+            {title || "Loading..."}
           </div>
           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {children}
+            {children || "Please wait..."}
           </p>
         </a>
       </NavigationMenuLink>
@@ -154,78 +147,113 @@ export function Navbar() {
   return (
     <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-6 py-4">
-        <NavigationMenu>
-          <NavigationMenuList>
-            {/* Featured */}
-            <NavigationMenuItem>
-              <NavigationMenuTrigger>
-                Featured
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                  {featuredArtists.map((artist) => (
-                    <ListItem
-                      key={artist.title}
-                      title={artist.title}
-                      href={artist.href}
-                    >
-                      {artist.description}
-                    </ListItem>
-                  ))}
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
+        <div className="flex items-center justify-between">
+          {/* Left side - Navigation Menu */}
+          <div className="flex items-center gap-4">
+            {/* Logo */}
+            <Link href="/" className="flex items-center">
+              <Image
+                src={shopCentralLogo}
+                alt="Shop Central Logo"
+                width={32}
+                height={32}
+                className="rounded-full hover:opacity-80 transition-opacity"
+              />
+            </Link>
+            
+            <NavigationMenu>
+              <NavigationMenuList>
+                {/* Featured */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger>
+                    Featured
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                      {featuredArtists.map((artist) => (
+                        <ListItem
+                          key={artist.title}
+                          title={artist.title}
+                          href={artist.href}
+                        >
+                          {artist.description}
+                        </ListItem>
+                      ))}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
 
-            {/* Popular */}
-            <NavigationMenuItem>
-              <NavigationMenuTrigger>
-                Popular
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                  {popularGenres.map((genre) => (
-                    <ListItem
-                      key={genre.title}
-                      title={genre.title}
-                      href={genre.href}
-                    >
-                      {genre.description}
-                    </ListItem>
-                  ))}
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
+                {/* Popular */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger>
+                    Popular
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                      {popularGenres.map((genre) => (
+                        <ListItem
+                          key={genre.title}
+                          title={genre.title}
+                          href={genre.href}
+                        >
+                          {genre.description}
+                        </ListItem>
+                      ))}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
 
-            {/* Genres */}
-            <NavigationMenuItem>
-              <NavigationMenuTrigger>
-                Genres
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                  {allGenres.map((genre) => (
-                    <ListItem
-                      key={genre.title}
-                      title={genre.title}
-                      href={genre.href}
-                    >
-                      {genre.description}
-                    </ListItem>
-                  ))}
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-            <NavigationMenuItem className="justify-end">
+                {/* Genres */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger>
+                    Genres
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                      {allGenres.map((genre) => (
+                        <ListItem
+                          key={genre.title}
+                          title={genre.title}
+                          href={genre.href}
+                        >
+                          {genre.description}
+                        </ListItem>
+                      ))}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+          </div>
+
+          {/* Right side - Authentication */}
+          <div className="flex items-center space-x-4">
             <SignedOut>
-              <SignInButton />
-              <SignUpButton />
+              <div className="flex items-center space-x-2">
+                <SignInButton>
+                  <Button variant="ghost" size="sm">
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Sign In
+                  </Button>
+                </SignInButton>
+                <SignUpButton>
+                  <Button size="sm">
+                    Sign Up
+                  </Button>
+                </SignUpButton>
+              </div>
             </SignedOut>
             <SignedIn>
-              <UserButton />
+              <UserButton 
+                appearance={{
+                  elements: {
+                    avatarBox: "h-8 w-8"
+                  }
+                }}
+              />
             </SignedIn>
-            </NavigationMenuItem>
-          </NavigationMenuList>
-        </NavigationMenu>
+          </div>
+        </div>
       </div>
     </div>
   );

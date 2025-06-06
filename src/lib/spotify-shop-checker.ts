@@ -1,5 +1,7 @@
 'use server';
 
+import { callLLM } from './call-llm';
+
 ///////////////////////////
 // Types
 ///////////////////////////
@@ -192,7 +194,125 @@ function buildArtistCards(artists: SpotifyArtist[]): ArtistCard[] {
 }
 
 ///////////////////////////
-// Public entry point
+// Artist search by name
+///////////////////////////
+
+interface SpotifySearchResponse {
+  artists: {
+    items: SpotifyArtist[];
+  };
+}
+
+/** Search for a single artist by name using Spotify's search API */
+async function searchArtistByName(artistName: string, token: string): Promise<SpotifyArtist | null> {
+  const query = encodeURIComponent(artistName);
+  const url = `https://api.spotify.com/v1/search?q=${query}&type=artist&limit=1`;
+  
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  
+  if (!res.ok) {
+    console.error(`Failed to search for artist "${artistName}": ${res.status} ${res.statusText}`);
+    return null;
+  }
+  
+  const json: SpotifySearchResponse = await res.json();
+  return json.artists?.items?.[0] || null;
+}
+
+/** Search for multiple artists by their names */
+async function searchArtistsByNames(artistNames: string[], token: string): Promise<SpotifyArtist[]> {
+  const artists: SpotifyArtist[] = [];
+  
+  for (const name of artistNames) {
+    try {
+      const artist = await searchArtistByName(name, token);
+      if (artist) {
+        artists.push(artist);
+      }
+      // Small delay to be polite to the API
+      await new Promise(r => setTimeout(r, 100));
+    } catch (error) {
+      console.error(`Error searching for artist "${name}":`, error);
+    }
+  }
+  
+  return artists;
+}
+
+/** Parse artist names from LLM response */
+function parseArtistNames(llmResponse: string): string[] {
+  try {
+    // Try to parse as JSON array first
+    const parsed = JSON.parse(llmResponse);
+    if (Array.isArray(parsed)) {
+      return parsed.filter(name => typeof name === 'string' && name.trim());
+    }
+  } catch {
+    // If JSON parsing fails, try to extract from text
+    const matches = llmResponse.match(/\[(.*?)\]/);
+    if (matches) {
+      return matches[1]
+        .split(',')
+        .map(name => name.trim().replace(/['"]/g, ''))
+        .filter(Boolean);
+    }
+    
+    // Fallback: split by commas and clean up
+    return llmResponse
+      .split(',')
+      .map(name => name.trim().replace(/['"[\]]/g, ''))
+      .filter(Boolean);
+  }
+  
+  return [];
+}
+
+///////////////////////////
+// Recommendations helper
+///////////////////////////
+
+/**
+ * Get artist cards using Spotify's /recommendations endpoint seeded by genres.
+ * This provides more relevant genre-based suggestions than plain search.
+ */
+export async function getArtistShopUrlsByRecommendations(rawGenres = ''): Promise<ArtistCard[]> {
+  if (!rawGenres.trim()) return [];
+
+  const token  = await getAccessToken();
+  const genres = parseGenres(rawGenres).slice(0, 5); // Spotify allows up to 5 seed genres
+
+  // Encode each genre individually but preserve commas between them
+  const genreParam = genres.map(g => encodeURIComponent(g)).join(',');
+  const url = `https://api.spotify.com/v1/recommendations?seed_genres=${genreParam}&limit=100&market=US`;
+
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  if (!res.ok) {
+    console.warn(`Recommendations endpoint failed (${res.status}). Falling back to searchTracksByGenre approach.`);
+    // Fallback: use existing genre-based search
+    try {
+      return await getArtistShopUrls(rawGenres);
+    } catch (fallbackErr) {
+      throw new Error(`Recommendations failed: ${res.status} ${res.statusText} – ${await res.text()}`);
+    }
+  }
+
+  const json = await res.json();
+  const tracks: Track[] = json.tracks ?? [];
+
+  if (!tracks.length) return [];
+
+  const artistIds = extractUniqueArtistIds(tracks);
+  const artists   = await getArtistDetails(artistIds, token);
+  return buildArtistCards(artists);
+}
+
+///////////////////////////
+// Public entry points
 ///////////////////////////
 
 /**
@@ -221,4 +341,53 @@ export async function getArtistShopUrls(rawGenres = ''): Promise<ArtistCard[]> {
   );
 
   return artistCards;
+}
+
+/**
+ * Given a user query, use LLM to get artist names, then search for them on Spotify
+ * and return artist cards with shop URLs.
+ */
+export async function getArtistShopUrlsFromLLM(userQuery: string): Promise<ArtistCard[]> {
+  if (!userQuery?.trim()) {
+    return [];
+  }
+
+  try {
+    // 1. Get access token
+    const token = await getAccessToken();
+    
+    // 2. Use LLM to get artist names
+    console.log(`Getting artist suggestions from LLM for query: "${userQuery}"`);
+    const llmResponse = await callLLM(userQuery);
+    const artistNames = parseArtistNames(llmResponse.content || '');
+    
+    console.log(`LLM suggested artists: ${artistNames.join(', ')}`);
+    
+    if (artistNames.length === 0) {
+      console.log('No artists found from LLM, falling back to genre-based search');
+      return await getArtistShopUrls(userQuery);
+    }
+    
+    // 3. Search for artists on Spotify
+    console.log(`Searching for ${artistNames.length} artists on Spotify...`);
+    const artists = await searchArtistsByNames(artistNames, token);
+    
+    // 4. Build artist cards
+    const artistCards = buildArtistCards(artists);
+    
+    console.log(`Final results: ${artistNames.length} LLM suggestions → ${artists.length} found artists → ${artistCards.length} artist cards`);
+    
+    return artistCards;
+  } catch (error) {
+    console.error('Error in getArtistShopUrlsFromLLM:', error);
+    
+    // Fallback to genre-based search if LLM fails
+    console.log('LLM failed, falling back to genre-based search');
+    try {
+      return await getArtistShopUrls(userQuery);
+    } catch (fallbackError) {
+      console.error('Fallback search also failed:', fallbackError);
+      throw new Error(`Both LLM and fallback search failed. LLM error: ${error instanceof Error ? error.message : 'Unknown error'}. Fallback error: ${fallbackError instanceof Error ? fallbackError.message : 'Unknown error'}`);
+    }
+  }
 }
