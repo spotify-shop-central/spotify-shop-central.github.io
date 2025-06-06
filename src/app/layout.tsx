@@ -38,7 +38,7 @@ export default function RootLayout({
           colorPrimary: "#1DB954", // Spotify green
         }
       }}
-      domain="spotify-shop-central--spotify-shop-central.us-central1.hosted.app"
+      domain="https://spotifyshopcentral.app"
       isSatellite={false}
     >
     <html lang="en" suppressHydrationWarning>
