@@ -10,12 +10,26 @@ import { getArtistShopUrls, getArtistShopUrlsFromLLM } from "../../lib/spotify-s
 import { SearchResults } from "../../components/search-results"
 import Image from "next/image"
 import shopCentralLogo from "../../../public/shop-central-logo.png"
+import { useAuthenticatedFetch } from "../../lib/auth-fetch"
+import { useUser } from "@clerk/nextjs"
 
 function HomeContent() {
   const router = useRouter();
+  const { user } = useUser();
+  const authenticatedFetch = useAuthenticatedFetch();
   const searchParams = useSearchParams();
   const query = searchParams.get('query') || '';
   const queryType = searchParams.get('type') || '';   // default empty means LLM
+
+  // Example of using authenticated fetch
+  const callProtectedAPI = async () => {
+    try {
+      const data = await authenticatedFetch('/api/protected');
+      console.log('Protected data:', data);
+    } catch (error) {
+      console.error('Failed to call protected API:', error);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

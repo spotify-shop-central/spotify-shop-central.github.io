@@ -31,7 +31,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        baseTheme: undefined,
+        variables: {
+          colorPrimary: "#1DB954", // Spotify green
+        }
+      }}
+      domain="spotify-shop-central--spotify-shop-central.us-central1.hosted.app"
+      isSatellite={false}
+    >
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
