@@ -23,7 +23,7 @@ function HomeContent() {
       </div>
 
       <div className="max-w-4xl mx-auto">
-        <Accordion type="single" collapsible className="w-full">
+        <Accordion type="single" collapsible className="w-full" defaultValue="about">
           <AccordionItem value="about">
             <AccordionTrigger className="text-left">
               About Spotify Shop Central
