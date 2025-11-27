@@ -40,6 +40,8 @@ buildConfig:
   commands:
     - name: Install deps
       command: yarn install
+    - name: Install Clerk
+      command: yarn add @clerk/nextjs @clerk/clerk-js
     - name: Build Next.js
       command: yarn build
 
