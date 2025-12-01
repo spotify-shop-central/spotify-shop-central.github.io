@@ -1,12 +1,13 @@
 'use client';
 
 import { Suspense } from "react"
+import * as React from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Input } from "../../components/ui/input"
 import { Button } from "../../components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../../components/ui/accordion"
-import { Search as SearchIcon } from "lucide-react"
-import { SearchResults } from "../../components/search-results"
+import { Search as SearchIcon, Shuffle } from "lucide-react"
+import { SearchResults, SearchResultsRef } from "../../components/search-results"
 import Image from "next/image"
 import shopCentralLogo from "../../../public/shop-central-logo.png"
 import { useSearchAPI } from "../../lib/auth-fetch"
@@ -19,6 +20,7 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get('query') || '';
   const queryType = searchParams.get('type') || '';   // default empty means LLM
+  const searchResultsRef = React.useRef<SearchResultsRef>(null);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -36,7 +38,7 @@ function HomeContent() {
     try {
       const searchType = (queryType === 'regular' || queryType === 'genre') ? 'genre' : 'llm';
       const result = await search(searchQuery, searchType);
-      
+
       if (result.success) {
         return result.results;
       } else {
@@ -54,7 +56,7 @@ function HomeContent() {
       <div className="container mx-auto max-w-7xl p-6 space-y-6">
         <div className="text-center space-y-4">
           <div className="flex justify-center items-center gap-2">
-            <Image src={shopCentralLogo} alt="Spotify Logo" width={100} height={100} className="mr-2"/>
+            <Image src={shopCentralLogo} alt="Spotify Logo" width={100} height={100} className="mr-2" />
             <h1 className="text-5xl font-bold tracking-tight">Loading...</h1>
           </div>
           <p className="text-muted-foreground text-lg">
@@ -71,7 +73,7 @@ function HomeContent() {
       <div className="container mx-auto max-w-7xl p-6 space-y-6">
         <div className="text-center space-y-4">
           <div className="flex justify-center items-center gap-2">
-            <Image src={shopCentralLogo} alt="Spotify Logo" width={100} height={100} className="mr-2"/>
+            <Image src={shopCentralLogo} alt="Spotify Logo" width={100} height={100} className="mr-2" />
             <h1 className="text-5xl font-bold tracking-tight">Authentication Required</h1>
           </div>
           <p className="text-muted-foreground text-lg">
@@ -91,7 +93,7 @@ function HomeContent() {
       <div className="container mx-auto max-w-7xl p-6 space-y-6">
         <div className="text-center space-y-4">
           <div className="flex justify-center items-center gap-2">
-            <Image src={shopCentralLogo} alt="Spotify Logo" width={100} height={100} className="mr-2"/>
+            <Image src={shopCentralLogo} alt="Spotify Logo" width={100} height={100} className="mr-2" />
             <h1 className="text-5xl font-bold tracking-tight">Search Dashboard</h1>
           </div>
           <p className="text-muted-foreground text-lg">
@@ -142,9 +144,9 @@ function HomeContent() {
                     <h4 className="font-medium mb-2">AI-Powered Search Examples:</h4>
                     <div className="flex flex-wrap gap-2">
                       {['trending pop artists', 'classic rock legends', 'indie folk bands', 'electronic dance music', 'alternative hip-hop', 'acoustic singer-songwriters', 'modern jazz artists', 'viral tiktok songs'].map(example => (
-                        <Button 
+                        <Button
                           key={example}
-                          variant="outline" 
+                          variant="outline"
                           size="sm"
                           onClick={() => {
                             const input = document.querySelector('input[name="query"]') as HTMLInputElement;
@@ -167,9 +169,9 @@ function HomeContent() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex gap-2 max-w-md mx-auto">
-          <Input 
-            name="query" 
-            placeholder="Ask for any music style or artist type..." 
+          <Input
+            name="query"
+            placeholder="Ask for any music style or artist type..."
             className="flex-1"
           />
           <Button type="submit">
@@ -186,15 +188,25 @@ function HomeContent() {
     <div className="container mx-auto max-w-7xl p-6 space-y-6">
       <div className="text-center space-y-4">
         <div className="flex justify-center items-center gap-2">
-          <Image src={shopCentralLogo} alt="Spotify Logo" width={100} height={100} className="mr-2"/>
+          <Image src={shopCentralLogo} alt="Spotify Logo" width={100} height={100} className="mr-2" />
           <h1 className="text-5xl font-bold tracking-tight">Search Results</h1>
         </div>
       </div>
-      <Button variant="outline" onClick={() => router.back()}>
-        Back
-      </Button>
-      <SearchResults 
-        query={query} 
+      <div className="flex gap-2 items-center justify-center">
+        <Button variant="outline" onClick={() => router.back()}>
+          Back
+        </Button>
+        <Button
+          className="bg-green-500 hover:bg-green-600 text-white"
+          onClick={() => searchResultsRef.current?.shuffle()}
+        >
+          <Shuffle className="mr-2 h-4 w-4" />
+          Shuffle
+        </Button>
+      </div>
+      <SearchResults
+        ref={searchResultsRef}
+        query={query}
         searchFunction={apiSearchFunction}
       />
     </div>

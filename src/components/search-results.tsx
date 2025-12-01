@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -12,6 +12,10 @@ interface SearchResultsProps {
   query: string;
   searchFunction: (query: string) => Promise<ArtistCard[]>;
   showSpecialView?: boolean;
+}
+
+export interface SearchResultsRef {
+  shuffle: () => void;
 }
 
 interface State {
@@ -31,7 +35,7 @@ const loadingMessages = [
   "🎶 Almost ready to rock..."
 ];
 
-export function SearchResults({ query, searchFunction, showSpecialView = false }: SearchResultsProps) {
+export const SearchResults = forwardRef<SearchResultsRef, SearchResultsProps>(({ query, searchFunction, showSpecialView = false }, ref) => {
   const [state, setState] = useState<State>({
     artists: [],
     loading: true,
@@ -39,6 +43,15 @@ export function SearchResults({ query, searchFunction, showSpecialView = false }
     progress: 10,
     loadingText: loadingMessages[0]
   });
+
+  useImperativeHandle(ref, () => ({
+    shuffle: () => {
+      setState(prev => ({
+        ...prev,
+        artists: [...prev.artists].sort(() => Math.random() - 0.5)
+      }));
+    }
+  }));
 
   // Progress animation during loading
   useEffect(() => {
@@ -232,4 +245,6 @@ export function SearchResults({ query, searchFunction, showSpecialView = false }
       </div>
     </div>
   );
-} 
+});
+
+SearchResults.displayName = "SearchResults"; 
