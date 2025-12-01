@@ -6,6 +6,7 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { ExternalLink, Music, ShoppingBag } from "lucide-react";
 import { ArtistCard } from "../lib/spotify-shop-checker";
+import { SearchCache } from "../lib/search-cache";
 
 interface SearchResultsProps {
   query: string;
@@ -43,7 +44,7 @@ export function SearchResults({ query, searchFunction, showSpecialView = false }
   useEffect(() => {
     let interval: NodeJS.Timeout;
     let messageInterval: NodeJS.Timeout;
-    
+
     if (state.loading) {
       interval = setInterval(() => {
         setState(prev => ({
@@ -51,7 +52,7 @@ export function SearchResults({ query, searchFunction, showSpecialView = false }
           progress: Math.min(prev.progress + Math.random() * 15, 95)
         }));
       }, 300);
-      
+
       messageInterval = setInterval(() => {
         setState(prev => ({
           ...prev,
@@ -59,7 +60,7 @@ export function SearchResults({ query, searchFunction, showSpecialView = false }
         }));
       }, 2000);
     }
-    
+
     return () => {
       clearInterval(interval);
       clearInterval(messageInterval);
@@ -74,25 +75,42 @@ export function SearchResults({ query, searchFunction, showSpecialView = false }
   }, [query]);
 
   const handleSearch = async () => {
-    setState(prev => ({ 
-      ...prev, 
-      loading: true, 
-      error: null, 
+    // Check cache first
+    const cachedResults = SearchCache.get(query);
+
+    if (cachedResults) {
+      setState(prev => ({
+        ...prev,
+        artists: cachedResults,
+        loading: false,
+        progress: 100,
+        loadingText: "🎉 Ready to explore!"
+      }));
+      return;
+    }
+
+    setState(prev => ({
+      ...prev,
+      loading: true,
+      error: null,
       progress: 10,
       loadingText: loadingMessages[0],
       artists: []
     }));
-    
+
     try {
       // Ensure minimum loading time for better UX
       const [artistCards] = await Promise.all([
         searchFunction(query),
-        new Promise(resolve => setTimeout(resolve, 1500)) // Minimum 1.5 seconds
+        new Promise(resolve => setTimeout(resolve, 800)) // Minimum 1.5 seconds
       ]);
-      
-      setState(prev => ({ 
+
+      // Cache the results
+      SearchCache.set(query, artistCards);
+
+      setState(prev => ({
         ...prev,
-        artists: artistCards, 
+        artists: artistCards,
         loading: false,
         progress: 100,
         loadingText: "🎉 Ready to explore!"
@@ -101,9 +119,9 @@ export function SearchResults({ query, searchFunction, showSpecialView = false }
       console.error('Error fetching artist results:', error);
       // Ensure error state also waits for minimum loading time
       await new Promise(resolve => setTimeout(resolve, 1000));
-      setState(prev => ({ 
+      setState(prev => ({
         ...prev,
-        artists: [], 
+        artists: [],
         loading: false,
         error: error instanceof Error ? error.message : 'An error occurred',
         progress: 0
@@ -124,7 +142,7 @@ export function SearchResults({ query, searchFunction, showSpecialView = false }
       <div className="text-center py-8 space-y-4 max-w-md mx-auto">
         <div className="relative">
           <div className="w-full h-3 bg-secondary rounded-full overflow-hidden">
-            <div 
+            <div
               className="h-full bg-green-500 transition-all duration-300 ease-out rounded-full"
               style={{
                 width: `${state.progress}%`,
@@ -153,7 +171,7 @@ export function SearchResults({ query, searchFunction, showSpecialView = false }
           Found {state.artists.length === 1 ? "1 artist" : `${state.artists.length} artists`}
         </Badge>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-h-[600px] overflow-y-auto">
         {state.artists.map((artist) => (
           <Card key={artist.id} className="group hover:shadow-lg transition-shadow h-[400px]">
